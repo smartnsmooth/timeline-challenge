@@ -1,23 +1,46 @@
-import React, { useCallback } from "react";
+import React, { useState, useCallback } from "react";
 
 type PlayControlsProps = {
   time: number;
   setTime: (time: number) => void;
+  duration: number;
+  setDuration: (duration: number) => void;
 };
 
-export const PlayControls = ({ time, setTime }: PlayControlsProps) => {
-  // TODO: implement time <= maxTime
+export const PlayControls = ({
+  time,
+  setTime,
+  duration,
+}: PlayControlsProps) => {
+  const [inputValue, setInputValue] = useState(time);
 
-  const onTimeChange = useCallback(
+  const onInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setTime(Number(e.target.value));
+      setInputValue(Number(e.target.value));
     },
-    [setTime],
+    []
+  );
+
+  const onInputBlur = useCallback(() => {
+    if (inputValue >= 0 && inputValue <= duration) {
+      setTime(inputValue);
+    } else {
+      setInputValue(time); // Reset to the original time if out of bounds
+    }
+  }, [inputValue, setTime, duration, time]);
+
+  const onKeyPress = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        onInputBlur();
+      }
+    },
+    [onInputBlur]
   );
 
   return (
     <div
-      className="flex items-center justify-between border-b border-r border-solid border-gray-700 
+      className="flex items-center justify-between border-b border-r border-solid border-gray-700
  px-2"
       data-testid="play-controls"
     >
@@ -28,10 +51,12 @@ export const PlayControls = ({ time, setTime }: PlayControlsProps) => {
           type="number"
           data-testid="current-time-input"
           min={0}
-          max={2000}
+          max={duration}
           step={10}
-          value={time}
-          onChange={onTimeChange}
+          value={inputValue}
+          onChange={onInputChange} // Update immediately
+          onBlur={onInputBlur} // Confirm on blur
+          onKeyPress={onKeyPress} // Confirm on Enter
         />
       </fieldset>
       -
@@ -43,7 +68,7 @@ export const PlayControls = ({ time, setTime }: PlayControlsProps) => {
           min={100}
           max={2000}
           step={10}
-          defaultValue={2000}
+          defaultValue={duration}
         />
         Duration
       </fieldset>
