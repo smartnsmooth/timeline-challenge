@@ -15,39 +15,40 @@ export const PlayControls = ({
   const [inputValue, setInputValue] = useState(time);
   const [digitPressed, setDigitPressed] = useState(false);
 
-  const onInputBlur = useCallback(() => {
-    if (inputValue >= 0 && inputValue <= duration) {
-      setTime(inputValue);
+  const validateAndSetTime = (value: number) => {
+    if (value >= 0 && value <= duration) {
+      setTime(value);
     } else {
       setInputValue(time); // Reset to original time if out of bounds
     }
-  }, [inputValue, setTime, duration, time]);
+  };
+
+  const onInputBlur = useCallback(() => {
+    validateAndSetTime(inputValue);
+  }, [inputValue, time, duration]);
 
   const onInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const eValue = Number(e.target.value);
-
+      // Immediate update when clicking step buttons
       if (Math.abs(eValue - inputValue) === 10 && !digitPressed) {
-        if (eValue >= 0 && eValue <= duration) {
-          setTime(eValue);
-        }
+        validateAndSetTime(eValue);
       }
-
-      setInputValue(eValue);
-      setDigitPressed(false); // Reset digitPressed state after the change
+      setInputValue(eValue); // Always update the display
+      setDigitPressed(false); // Reset after processing
     },
-    [inputValue, digitPressed, setTime, duration]
+    [inputValue, digitPressed, duration]
   );
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
-        onInputBlur();
+        validateAndSetTime(inputValue);
       } else if (/^[0-9]$/.test(e.key)) {
-        setDigitPressed(true); // Set digitPressed to true when a number key is pressed
+        setDigitPressed(true); // Only set this flag on digit press
       }
     },
-    [onInputBlur]
+    [inputValue, duration]
   );
 
   return (
