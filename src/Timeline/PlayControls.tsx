@@ -13,26 +13,38 @@ export const PlayControls = ({
   duration,
 }: PlayControlsProps) => {
   const [inputValue, setInputValue] = useState(time);
-
-  const onInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInputValue(Number(e.target.value));
-    },
-    []
-  );
+  const [digitPressed, setDigitPressed] = useState(false);
 
   const onInputBlur = useCallback(() => {
     if (inputValue >= 0 && inputValue <= duration) {
       setTime(inputValue);
     } else {
-      setInputValue(time); // Reset to the original time if out of bounds
+      setInputValue(time); // Reset to original time if out of bounds
     }
   }, [inputValue, setTime, duration, time]);
 
-  const onKeyPress = useCallback(
+  const onInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const eValue = Number(e.target.value);
+
+      if (Math.abs(eValue - inputValue) === 10 && !digitPressed) {
+        if (eValue >= 0 && eValue <= duration) {
+          setTime(eValue);
+        }
+      }
+
+      setInputValue(eValue);
+      setDigitPressed(false); // Reset digitPressed state after the change
+    },
+    [inputValue, digitPressed, setTime, duration]
+  );
+
+  const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
         onInputBlur();
+      } else if (/^[0-9]$/.test(e.key)) {
+        setDigitPressed(true); // Set digitPressed to true when a number key is pressed
       }
     },
     [onInputBlur]
@@ -40,8 +52,7 @@ export const PlayControls = ({
 
   return (
     <div
-      className="flex items-center justify-between border-b border-r border-solid border-gray-700
- px-2"
+      className="flex items-center justify-between border-b border-r border-solid border-gray-700 px-2"
       data-testid="play-controls"
     >
       <fieldset className="flex gap-1">
@@ -54,9 +65,9 @@ export const PlayControls = ({
           max={duration}
           step={10}
           value={inputValue}
-          onChange={onInputChange} // Update immediately
-          onBlur={onInputBlur} // Confirm on blur
-          onKeyPress={onKeyPress} // Confirm on Enter
+          onChange={onInputChange}
+          onBlur={onInputBlur}
+          onKeyDown={onKeyDown}
         />
       </fieldset>
       -
