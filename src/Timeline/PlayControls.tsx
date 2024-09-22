@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useRef } from "react";
 
 type PlayControlsProps = {
   time: number;
@@ -7,49 +7,101 @@ type PlayControlsProps = {
   setDuration: (duration: number) => void;
 };
 
-export const PlayControls = ({
-  time,
-  setTime,
-  duration,
-}: PlayControlsProps) => {
-  const [inputValue, setInputValue] = useState(time);
-  const [digitPressed, setDigitPressed] = useState(false);
+export const PlayControls = ({ time, setTime, duration, setDuration }: PlayControlsProps) => {
+  const minDuration = 100;
+  const maxDuration = 6000;
+  const inputStep = 10;
 
-  const validateAndSetTime = (value: number) => {
-    if (value >= 0 && value <= duration) {
-      setTime(value);
+  const [timeInputValue, setTimeInputValue] = useState(time);
+  const [durationInputValue, setDurationInputValue] = useState(duration);
+  const [editing, setEditing] = useState(false);
+  const escPressedRef = useRef(false);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setInputValue: (value: number) => void,
+    validateAndSet: (value: number) => void
+  ) => {
+    const eValue = Number(e.target.value);
+
+    if (!editing) {
+      validateAndSet(eValue); // Update immediately when clicking step buttons
     } else {
-      setInputValue(time); // Reset to original time if out of bounds
+      setInputValue(eValue); // Update input value state
+    }
+    setEditing(false); // Reset after change
+  };
+
+  // Generalized input blur handler
+  const handleInputBlur = (inputValue: number, validateAndSet: (value: number) => void) => {
+    // if (!escPressedRef.current) {
+      validateAndSet(inputValue); // Validate and update on blur
+    // }
+    // escPressedRef.current = false;
+  };
+
+  // Generalized key down handler for Enter and digit keys
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    inputValue: number,
+    validateAndSet: (value: number) => void
+  ) => {
+    if (e.key === "Enter") {
+      validateAndSet(inputValue); // Confirm value on Enter
+      (e.target as HTMLInputElement).blur();
+    } else if (e.key === "Escape") {
+      // setInputValue(time); // Track when a digit is pressed
+      escPressedRef.current = true;
+      (e.target as HTMLInputElement).blur();
+    } else if (/^[0-9]$/.test(e.key) || e.key === "Backspace" || e.key === "Delete") {
+      setEditing(true); // Track when a digit is pressed
     }
   };
 
-  const onInputBlur = useCallback(() => {
-    validateAndSetTime(inputValue);
-  }, [inputValue, time, duration]);
+  // Generalized focus handler to select all text
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select(); // Select all text when input gains focus
+  };
 
-  const onInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const eValue = Number(e.target.value);
-      // Immediate update when clicking step buttons
-      if (Math.abs(eValue - inputValue) === 10 && !digitPressed) {
-        validateAndSetTime(eValue);
+  // Validate and set time
+  const validateAndSetTime = (value: number) => {
+    if (escPressedRef.current) {
+      setTimeInputValue(time);
+      escPressedRef.current = false;
+    } else {
+      value = Math.round(value / 10) * 10;
+      if (value < 0) {
+        setTime(0);
+        setTimeInputValue(0);
+      } else if (value > duration) {
+        setTime(duration);
+        setTimeInputValue(duration);
+      } else {
+        setTime(value);
+        setTimeInputValue(value); // Reset to original time if out of bounds
       }
-      setInputValue(eValue); // Always update the display
-      setDigitPressed(false); // Reset after processing
-    },
-    [inputValue, digitPressed, duration]
-  );
+    }
+  };
 
-  const onKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-        validateAndSetTime(inputValue);
-      } else if (/^[0-9]$/.test(e.key)) {
-        setDigitPressed(true); // Only set this flag on digit press
+  // Validate and set duration
+  const validateAndSetDuration = (value: number) => {
+    if (escPressedRef.current) {
+      setDurationInputValue(duration);
+      escPressedRef.current = false;
+    } else {
+      value = Math.round(value / 10) * 10;
+      if (value < minDuration) {
+        setDuration(minDuration);
+        setDurationInputValue(minDuration);
+      } else if (value > maxDuration) {
+        setDuration(maxDuration);
+        setDurationInputValue(maxDuration);
+      } else {
+        setDuration(value);
+        setDurationInputValue(value); // Reset to original time if out of bounds
       }
-    },
-    [inputValue, duration]
-  );
+    }
+  };
 
   return (
     <div
@@ -64,11 +116,12 @@ export const PlayControls = ({
           data-testid="current-time-input"
           min={0}
           max={duration}
-          step={10}
-          value={inputValue}
-          onChange={onInputChange}
-          onBlur={onInputBlur}
-          onKeyDown={onKeyDown}
+          step={inputStep}
+          value={timeInputValue.toString()}
+          onChange={(e) => handleInputChange(e, setTimeInputValue, validateAndSetTime)}
+          onBlur={() => handleInputBlur(timeInputValue, validateAndSetTime)}
+          onKeyDown={(e) => handleKeyDown(e, timeInputValue, validateAndSetTime)}
+          onFocus={handleInputFocus}
         />
       </fieldset>
       -
@@ -77,10 +130,14 @@ export const PlayControls = ({
           className="bg-gray-700 px-1 rounded"
           type="number"
           data-testid="duration-input"
-          min={100}
-          max={2000}
-          step={10}
-          defaultValue={duration}
+          min={minDuration}
+          max={maxDuration}
+          step={inputStep}
+          value={durationInputValue.toString()}
+          onChange={(e) => handleInputChange(e, setDurationInputValue, validateAndSetDuration)}
+          onBlur={() => handleInputBlur(durationInputValue, validateAndSetDuration)}
+          onKeyDown={(e) => handleKeyDown(e, durationInputValue, validateAndSetDuration)}
+          onFocus={handleInputFocus}
         />
         Duration
       </fieldset>
