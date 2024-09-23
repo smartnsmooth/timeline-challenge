@@ -3,9 +3,10 @@ import { ForwardedRef } from "react";
 type TrackListProps = {
   divRef: ForwardedRef<HTMLDivElement>;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
+  count: number;
 };
 
-export const TrackList = ({ divRef, onScroll }: TrackListProps) => {
+export const TrackList = ({ divRef, onScroll, count }: TrackListProps) => {
   // TODO: implement scroll sync with `KeyframeList`
 
   return (
@@ -17,36 +18,11 @@ export const TrackList = ({ divRef, onScroll }: TrackListProps) => {
       ref={divRef}
       onScroll={(e) => onScroll(e)}
     >
-      <div className="p-2">
-        <div>Track A</div>
-      </div>
-      <div className="p-2">
-        <div>Track B</div>
-      </div>
-      <div className="p-2">
-        <div>Track C</div>
-      </div>
-      <div className="p-2">
-        <div>Track D</div>
-      </div>
-      <div className="p-2">
-        <div>Track E</div>
-      </div>
-      <div className="p-2">
-        <div>Track F </div>
-      </div>
-      <div className="p-2">
-        <div>Track G</div>
-      </div>
-      <div className="p-2">
-        <div>Track H</div>
-      </div>
-      <div className="p-2">
-        <div>Track I </div>
-      </div>
-      <div className="p-2">
-        <div>Track J</div>
-      </div>
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} className="p-2">
+          <div>Track {String.fromCharCode(65 + index)}</div>
+        </div>
+      ))}
     </div>
   );
 };

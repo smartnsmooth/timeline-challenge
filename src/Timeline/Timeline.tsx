@@ -12,17 +12,22 @@ export const Timeline = () => {
   const rulerRef = useRef<HTMLDivElement>(null);
   const keyframeRef = useRef<HTMLDivElement>(null);
   const trackListRef = useRef<HTMLDivElement>(null);
+  const count = 26;
 
-  const syncScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const rulerScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (rulerRef.current && keyframeRef.current) {
+      keyframeRef.current.scrollLeft = e.currentTarget.scrollLeft;
+    }
+  };
+  const trackListScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (trackListRef.current && keyframeRef.current) {
+      keyframeRef.current.scrollTop = e.currentTarget.scrollTop;
+    }
+  };
+  const keyframeListScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (rulerRef.current && keyframeRef.current && trackListRef.current) {
-      const scrollLeft = e.currentTarget.scrollLeft;
-      const scrollTop = e.currentTarget.scrollTop;
-      keyframeRef.current.scrollLeft = scrollLeft;
-      rulerRef.current.scrollLeft = scrollLeft;
-      trackListRef.current.scrollLeft = scrollLeft;
-      keyframeRef.current.scrollTop = scrollTop;
-      rulerRef.current.scrollTop = scrollTop;
-      trackListRef.current.scrollTop = scrollTop;
+      rulerRef.current.scrollLeft = e.currentTarget.scrollLeft;
+      trackListRef.current.scrollTop = e.currentTarget.scrollTop;
     }
   };
 
@@ -33,9 +38,9 @@ export const Timeline = () => {
       data-testid="timeline"
     >
       <PlayControls time={time} setTime={setTime} duration={duration} setDuration={setDuration} />
-      <Ruler time={time} setTime={setTime} duration={duration} divRef={rulerRef} onScroll={syncScroll} />
-      <TrackList divRef={trackListRef} onScroll={syncScroll} />
-      <KeyframeList divRef={keyframeRef} onScroll={syncScroll} />
+      <Ruler time={time} setTime={setTime} duration={duration} divRef={rulerRef} onScroll={rulerScroll} />
+      <TrackList divRef={trackListRef} onScroll={trackListScroll} count={count} />
+      <KeyframeList duration={duration} divRef={keyframeRef} onScroll={keyframeListScroll} count={count} />
       <Playhead time={time} />
     </div>
   );

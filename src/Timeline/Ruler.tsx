@@ -14,7 +14,6 @@ export const Ruler = ({ setTime, duration, divRef, onScroll }: RulerProps) => {
   // Update time based on mouse position
   const updateTime = useCallback(
     (clientX: number) => {
-      // const ruler = document.querySelector('[data-testid="ruler-bar"]');
       if (rulerRef.current) {
         const { left, width } = rulerRef.current.getBoundingClientRect();
         const newTime =
@@ -51,9 +50,10 @@ export const Ruler = ({ setTime, duration, divRef, onScroll }: RulerProps) => {
       onScroll={(e) => onScroll(e)}
     >
       <div
-        className="w-[2000px] h-6 rounded-md bg-white/25"
+        className="w-[2000px] h-full rounded-md bg-white/25"
         data-testid="ruler-bar"
         ref={rulerRef}
+        style={{ width: `${duration}px` }}
         onMouseDown={handleMouseDown}
       ></div>
     </div>

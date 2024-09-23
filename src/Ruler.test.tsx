@@ -69,6 +69,11 @@ describe("Ruler Component", () => {
     fireEvent.mouseDown(rulerBar, { clientX: -100 }); // Simulate an invalid position
     expect(setTimeMock).toHaveBeenCalledWith(0); // Should set to the minimum time (0)
   });
+
+  it("should have the correct width based on duration", () => {
+    const rulerBar = screen.getByTestId("ruler-bar");
+    expect(rulerBar.style.width).toBe(`${duration}px`); // Check if the width matches the duration
+  });
 });
 
 describe("Scroll synchronization between Ruler and KeyframeList", () => {
@@ -78,23 +83,27 @@ describe("Scroll synchronization between Ruler and KeyframeList", () => {
   });
 
   it("should synchronize scroll between Ruler and KeyframeList", () => {
-    const ruler = screen.getByTestId("ruler");
     const keyframeList = screen.getByTestId("keyframe-list");
+    const ruler = screen.getByTestId("ruler");
+    const trackList = screen.getByTestId("track-list");
 
     // Set up mock scroll position for both elements
+    Object.defineProperty(keyframeList, "scrollLeft", {
+      value: 0,
+      writable: true,
+    });
     Object.defineProperty(ruler, "scrollLeft", { value: 0, writable: true });
-    Object.defineProperty(keyframeList, "scrollLeft", { value: 0, writable: true });
 
-    // Simulate scrolling on the Ruler (scrollLeft)
-    fireEvent.scroll(ruler, { target: { scrollLeft: 100 } });
+    // Simulate scrolling on the KeyframeList (scrollLeft)
+    fireEvent.scroll(keyframeList, { target: { scrollLeft: 100 } });
 
-    // Check if the KeyframeList's scrollLeft has been updated to match the Ruler's scrollLeft
-    expect(keyframeList.scrollLeft).toBe(100);
+    // Check if the Ruler's scrollLeft has been updated to match the KeyframeList's scrollLeft
+    expect(ruler.scrollLeft).toBe(100);
 
     // Simulate scrolling on the KeyframeList (scrollTop)
     fireEvent.scroll(keyframeList, { target: { scrollTop: 150 } });
 
     // Check if the Ruler's scrollTop has been updated to match the KeyframeList's scrollTop
-    expect(ruler.scrollTop).toBe(150);
+    expect(trackList.scrollTop).toBe(150);
   });
 });
