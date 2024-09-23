@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 type PlayControlsProps = {
   time: number;
@@ -18,10 +18,12 @@ export const PlayControls = ({ time, setTime, duration, setDuration }: PlayContr
   const mouseDownedRef = useRef(false);
   const arrowClickedRef = useRef(false);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setInputValue: (value: number) => void
-  ) => {
+  useEffect(() => {
+    setTimeInputValue(time);
+    setDurationInputValue(duration);
+  }, [time, duration]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, setInputValue: (value: number) => void) => {
     const eValue = Number(e.target.value);
     setInputValue(eValue);
     if (mouseDownedRef.current) {
@@ -43,7 +45,11 @@ export const PlayControls = ({ time, setTime, duration, setDuration }: PlayContr
     }
   };
 
-  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>, value: number, validateAndSet: (value: number) => void) => {
+  const handleKeyUp = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    value: number,
+    validateAndSet: (value: number) => void
+  ) => {
     if (e.key === "Escape") {
       escPressedRef.current = false;
       (e.target as HTMLInputElement).blur();
@@ -76,13 +82,10 @@ export const PlayControls = ({ time, setTime, duration, setDuration }: PlayContr
       const value = Math.round(inputValue / 10) * 10;
       if (value < 0) {
         setTime(0);
-        setTimeInputValue(0);
       } else if (value > duration) {
         setTime(duration);
-        setTimeInputValue(duration);
       } else {
         setTime(value);
-        setTimeInputValue(value);
       }
     }
   };
@@ -95,16 +98,12 @@ export const PlayControls = ({ time, setTime, duration, setDuration }: PlayContr
       const value = Math.round(inputValue / 10) * 10;
       if (value < minDuration) {
         setDuration(minDuration);
-        setDurationInputValue(minDuration);
       } else if (value > maxDuration) {
         setDuration(maxDuration);
-        setDurationInputValue(maxDuration);
       } else {
         setDuration(value);
-        setDurationInputValue(value);
         if (time > value) {
           setTime(value);
-          setTimeInputValue(value);
         }
       }
     }
