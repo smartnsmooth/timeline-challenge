@@ -1,12 +1,14 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, ForwardedRef } from "react";
 
 type RulerProps = {
   time: number;
   setTime: (time: number) => void;
   duration: number;
+  divRef: ForwardedRef<HTMLDivElement>;
+  onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
 };
 
-export const Ruler = ({ setTime, duration }: RulerProps) => {
+export const Ruler = ({ setTime, duration, divRef, onScroll }: RulerProps) => {
   const rulerRef = useRef<HTMLDivElement>(null);
 
   // Update time based on mouse position
@@ -15,7 +17,8 @@ export const Ruler = ({ setTime, duration }: RulerProps) => {
       // const ruler = document.querySelector('[data-testid="ruler-bar"]');
       if (rulerRef.current) {
         const { left, width } = rulerRef.current.getBoundingClientRect();
-        const newTime = Math.round(Math.max(0, Math.min(duration, Math.round(clientX - left))) / 10) * 10 + width - width;
+        const newTime =
+          Math.round(Math.max(0, Math.min(duration, Math.round(clientX - left))) / 10) * 10 + width - width;
         setTime(newTime);
       }
     },
@@ -44,6 +47,8 @@ export const Ruler = ({ setTime, duration }: RulerProps) => {
       border-b border-solid border-gray-700 
       overflow-x-auto overflow-y-hidden"
       data-testid="ruler"
+      ref={divRef}
+      onScroll={(e) => onScroll(e)}
     >
       <div
         className="w-[2000px] h-6 rounded-md bg-white/25"

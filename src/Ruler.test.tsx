@@ -1,20 +1,41 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Ruler } from "./Timeline/Ruler"; // Adjust the import based on your file structure
+import { Timeline } from "./Timeline/Timeline"; // Adjust the import based on your file structure
 
 describe("Ruler Component", () => {
   let setTimeMock: jest.Mock;
+  let onScrollMock: jest.Mock;
   const time = 100;
   const duration = 2000; // Set the duration for testing
 
   beforeEach(() => {
     setTimeMock = jest.fn();
-    render(<Ruler time={time} setTime={setTimeMock} duration={duration} />);
+    onScrollMock = jest.fn();
+    render(
+      <>
+        <Ruler
+          time={time}
+          setTime={setTimeMock}
+          duration={duration}
+          divRef={null}
+          onScroll={onScrollMock}
+        />
+      </>
+    );
   });
 
   it("should update time when clicking on the ruler", () => {
     const rulerBar = screen.getByTestId("ruler-bar");
-    
+
+    // Simulate clicking at a specific point on the ruler
+    fireEvent.mouseDown(rulerBar, { clientX: 500 });
+    expect(setTimeMock).toHaveBeenCalledWith(500); // Ensure setTime was called
+  });
+
+  it("should update time when clicking on the ruler", () => {
+    const rulerBar = screen.getByTestId("ruler-bar");
+
     // Simulate clicking at the middle of the ruler
     fireEvent.mouseDown(rulerBar, { clientX: 500 }); // Adjust the x-coordinate as needed
     expect(setTimeMock).toHaveBeenCalledWith(500); // Verify the time set is correct (assuming 500 is valid)
@@ -22,7 +43,7 @@ describe("Ruler Component", () => {
 
   it("should update time when dragging the mouse on the ruler", () => {
     const rulerBar = screen.getByTestId("ruler-bar");
-    
+
     // Simulate mouse down and move
     fireEvent.mouseDown(rulerBar, { clientX: 500 });
     fireEvent.mouseMove(document, { clientX: 1000 });
@@ -47,5 +68,33 @@ describe("Ruler Component", () => {
     // Simulate mouse down before the start
     fireEvent.mouseDown(rulerBar, { clientX: -100 }); // Simulate an invalid position
     expect(setTimeMock).toHaveBeenCalledWith(0); // Should set to the minimum time (0)
+  });
+});
+
+describe("Scroll synchronization between Ruler and KeyframeList", () => {
+  beforeEach(() => {
+    // Render the Timeline component, which includes Ruler and KeyframeList
+    render(<Timeline />);
+  });
+
+  it("should synchronize scroll between Ruler and KeyframeList", () => {
+    const ruler = screen.getByTestId("ruler");
+    const keyframeList = screen.getByTestId("keyframe-list");
+
+    // Set up mock scroll position for both elements
+    Object.defineProperty(ruler, "scrollLeft", { value: 0, writable: true });
+    Object.defineProperty(keyframeList, "scrollLeft", { value: 0, writable: true });
+
+    // Simulate scrolling on the Ruler (scrollLeft)
+    fireEvent.scroll(ruler, { target: { scrollLeft: 100 } });
+
+    // Check if the KeyframeList's scrollLeft has been updated to match the Ruler's scrollLeft
+    expect(keyframeList.scrollLeft).toBe(100);
+
+    // Simulate scrolling on the KeyframeList (scrollTop)
+    fireEvent.scroll(keyframeList, { target: { scrollTop: 150 } });
+
+    // Check if the Ruler's scrollTop has been updated to match the KeyframeList's scrollTop
+    expect(ruler.scrollTop).toBe(150);
   });
 });
