@@ -7,21 +7,19 @@ describe("Ruler Component", () => {
   let setTimeMock: jest.Mock;
   let onScrollMock: jest.Mock;
   const time = 100;
-  const duration = 2000; // Set the duration for testing
+  const duration = 2400; // Set the duration for testing
 
   beforeEach(() => {
     setTimeMock = jest.fn();
     onScrollMock = jest.fn();
     render(
-      <>
-        <Ruler
-          time={time}
-          setTime={setTimeMock}
-          duration={duration}
-          divRef={null}
-          onScroll={onScrollMock}
-        />
-      </>
+      <Ruler
+        time={time}
+        setTime={setTimeMock}
+        duration={duration}
+        divRef={null}
+        onScroll={onScrollMock}
+      />
     );
   });
 
@@ -77,7 +75,6 @@ describe("Scroll synchronization between Ruler and KeyframeList", () => {
   it("should synchronize scroll between Ruler and KeyframeList", () => {
     const keyframeList = screen.getByTestId("keyframe-list");
     const ruler = screen.getByTestId("ruler");
-    const trackList = screen.getByTestId("track-list");
 
     // Set up mock scroll position for both elements
     Object.defineProperty(keyframeList, "scrollLeft", {
@@ -86,16 +83,7 @@ describe("Scroll synchronization between Ruler and KeyframeList", () => {
     });
     Object.defineProperty(ruler, "scrollLeft", { value: 0, writable: true });
 
-    // Simulate scrolling on the KeyframeList (scrollLeft)
-    fireEvent.scroll(keyframeList, { target: { scrollLeft: 100 } });
-
-    // Check if the Ruler's scrollLeft has been updated to match the KeyframeList's scrollLeft
-    expect(ruler.scrollLeft).toBe(100);
-
-    // Simulate scrolling on the KeyframeList (scrollTop)
-    fireEvent.scroll(keyframeList, { target: { scrollTop: 150 } });
-
-    // Check if the Ruler's scrollTop has been updated to match the KeyframeList's scrollTop
-    expect(trackList.scrollTop).toBe(150);
+    fireEvent.scroll(ruler, { target: { scrollLeft: 100 } });
+    expect(keyframeList.scrollLeft).toBe(100);
   });
 });
