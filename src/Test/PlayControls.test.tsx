@@ -1,7 +1,7 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
-import { PlayControls } from "./Timeline/PlayControls";
+import { PlayControls } from "../Timeline/PlayControls";
 
 describe("PlayControls Component", () => {
   let setTimeMock: jest.Mock;

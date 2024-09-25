@@ -1,7 +1,7 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { KeyframeList } from "./Timeline/KeyframeList"; // Adjust the import based on your file structure
-import { Timeline } from "./Timeline/Timeline"; // Adjust the import based on your file structure
+import { KeyframeList } from "../Timeline/KeyframeList"; // Adjust the import based on your file structure
+import { Timeline } from "../Timeline/Timeline"; // Adjust the import based on your file structure
 
 describe("KeyframeList Component", () => {
   let onScrollMock: jest.Mock;

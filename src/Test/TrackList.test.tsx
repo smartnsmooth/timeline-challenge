@@ -1,6 +1,6 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { Timeline } from "./Timeline/Timeline"; // Adjust the import based on your file structure
+import { Timeline } from "../Timeline/Timeline"; // Adjust the import based on your file structure
 
 describe("Scroll synchronization between TrackList and KeyframeList", () => {
   beforeEach(() => {

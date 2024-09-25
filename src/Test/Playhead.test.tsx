@@ -1,8 +1,8 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
-import { Timeline } from "./Timeline";
-import { Playhead } from "./Timeline/Playhead";
+import { Timeline } from "../Timeline";
+import { Playhead } from "../Timeline/Playhead";
 
 describe("Playhead position and visibility", () => {
   let timeInput: HTMLElement;
