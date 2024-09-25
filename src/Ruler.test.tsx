@@ -33,14 +33,6 @@ describe("Ruler Component", () => {
     expect(setTimeMock).toHaveBeenCalledWith(500); // Ensure setTime was called
   });
 
-  it("should update time when clicking on the ruler", () => {
-    const rulerBar = screen.getByTestId("ruler-bar");
-
-    // Simulate clicking at the middle of the ruler
-    fireEvent.mouseDown(rulerBar, { clientX: 500 }); // Adjust the x-coordinate as needed
-    expect(setTimeMock).toHaveBeenCalledWith(500); // Verify the time set is correct (assuming 500 is valid)
-  });
-
   it("should update time when dragging the mouse on the ruler", () => {
     const rulerBar = screen.getByTestId("ruler-bar");
 

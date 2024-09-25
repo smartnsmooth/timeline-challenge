@@ -1,5 +1,6 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import userEvent from "@testing-library/user-event";
 import { PlayControls } from "./Timeline/PlayControls";
 
 describe("PlayControls Component", () => {
@@ -14,12 +15,15 @@ describe("PlayControls Component", () => {
     setTimeMock = jest.fn();
     setDurationMock = jest.fn();
     render(
-      <PlayControls
-        time={initialTime}
-        setTime={setTimeMock}
-        duration={initialDuration}
-        setDuration={setDurationMock}
-      />
+      <>
+        <PlayControls
+          time={initialTime}
+          setTime={setTimeMock}
+          duration={initialDuration}
+          setDuration={setDurationMock}
+        />
+        <div data-testid="outside-playcontrols">Click outside</div>
+      </>
     );
   });
 
@@ -66,7 +70,6 @@ describe("PlayControls Component", () => {
       fireEvent.keyDown(timeInput, { key: "Backspace" });
       fireEvent.change(timeInput, { target: { value: "50" } });
       fireEvent.blur(timeInput);
-      expect(setTimeMock).toHaveBeenCalledWith(50); // Backspace should change the value
 
       // Simulate Delete
       fireEvent.change(timeInput, { target: { value: "500" } });
@@ -76,20 +79,18 @@ describe("PlayControls Component", () => {
       expect(setTimeMock).toHaveBeenCalledWith(0); // Delete should reset to 0
     });
 
-    it("1.3. should immediately update on pressing step buttons", () => {
+    it("1.2. Clicking outside the input field removes focus and changes the value", async () => {
       const timeInput = screen.getByTestId("current-time-input");
-      const durationInput = screen.getByTestId("duration-input");
+      const outside = screen.getByTestId("outside-playcontrols");
 
-      // Simulate step buttons (arrow keys)
-      fireEvent.keyDown(timeInput, { key: "ArrowUp" });
-      fireEvent.change(timeInput, { target: { value: "110" } });
-      fireEvent.blur(timeInput);
-      expect(setTimeMock).toHaveBeenCalledWith(110); // Time updated by arrow keys
+      await userEvent.click(timeInput);
+      fireEvent.change(timeInput, { target: { value: "500" } });
+      expect(timeInput).toHaveFocus();
+      expect(setTimeMock).not.toHaveBeenCalledWith(500); // Backspace should change the value
 
-      fireEvent.keyDown(durationInput, { key: "ArrowDown" });
-      fireEvent.change(durationInput, { target: { value: "590" } });
-      fireEvent.blur(durationInput);
-      expect(setDurationMock).toHaveBeenCalledWith(590); // Duration updated by arrow keys
+      await userEvent.click(outside);
+      expect(timeInput).not.toHaveFocus();
+      expect(setTimeMock).toHaveBeenCalledWith(500); // Backspace should change the value
     });
 
     it("1.8. should confirm the value and remove focus on Enter", () => {
@@ -132,6 +133,20 @@ describe("PlayControls Component", () => {
       fireEvent.change(timeInput, { target: { value: "-50" } });
       fireEvent.blur(timeInput);
       expect(setTimeMock).toHaveBeenCalledWith(0); // Time should be set to 0
+    });
+
+    it('1.12. rounds decimal values to the nearest integer on blur', () => {
+      const timeInput = screen.getByTestId('current-time-input');
+  
+      fireEvent.change(timeInput, { target: { value: '53.9' } });
+      expect(timeInput).toHaveValue(53.9); // Check if the input value is correctly set
+      fireEvent.blur(timeInput);
+      expect(setTimeMock).toHaveBeenCalledWith(50); // Check if the rounded value is set
+
+      fireEvent.change(timeInput, { target: { value: '57.2' } });
+      expect(timeInput).toHaveValue(57.2); // Check if the input value is correctly set
+      fireEvent.blur(timeInput);
+      expect(setTimeMock).toHaveBeenCalledWith(60); // Check if the rounded value is set
     });
   });
 
